@@ -175,6 +175,7 @@ fun LazyListScope.header(
                         pinnedVariant = pinnedVariantLabel,
                         showAllPlatforms = state.showAllPlatforms,
                         crossPlatformAssets = crossPlatformAssets,
+                        installedApps = state.installedApps,
                         onAction = onAction,
                         modifier = Modifier.weight(.65f),
                     )
