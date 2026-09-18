@@ -981,53 +981,7 @@ class DetailsViewModel(
     private fun pickPrimaryInstalledApp(
         apps: List<InstalledApp>,
         primaryAssetName: String?,
-    ): InstalledApp? {
-        if (apps.isEmpty()) return null
-        if (apps.size == 1) {
-            val sole = apps.first()
-            if (primaryAssetName != null && sole.installedAssetName != null) {
-                val soleGlob = AssetVariant.deriveGlob(sole.installedAssetName!!)
-                val primaryGlob = AssetVariant.deriveGlob(primaryAssetName)
-                if (soleGlob != null && primaryGlob != null && soleGlob != primaryGlob) {
-                    return null
-                }
-                val soleStem = AssetVariant.extractBaseStem(sole.installedAssetName!!)
-                val primaryStem = AssetVariant.extractBaseStem(primaryAssetName)
-                if (soleStem.isNotEmpty() && primaryStem.isNotEmpty() && soleStem != primaryStem) {
-                    return null
-                }
-            }
-            return sole
-        }
-        if (primaryAssetName != null) {
-            val filterMatch = apps.firstOrNull { existing ->
-                val filter = existing.assetFilterRegex
-                filter != null && runCatching { Regex(filter).containsMatchIn(primaryAssetName) }
-                    .getOrDefault(false)
-            }
-            if (filterMatch != null) return filterMatch
-
-            val primaryGlob = AssetVariant.deriveGlob(primaryAssetName)
-            val globMatch = apps.firstOrNull { existing ->
-                val installedAsset = existing.installedAssetName ?: return@firstOrNull false
-                val existingGlob = AssetVariant.deriveGlob(installedAsset)
-                existingGlob != null && primaryGlob != null && existingGlob == primaryGlob
-            }
-            if (globMatch != null) return globMatch
-
-            val primaryStem = AssetVariant.extractBaseStem(primaryAssetName)
-            if (primaryStem.isNotEmpty()) {
-                val stemMatch = apps.firstOrNull { existing ->
-                    val name = existing.installedAssetName ?: return@firstOrNull false
-                    val existingStem = AssetVariant.extractBaseStem(name)
-                    existingStem.isNotEmpty() && existingStem == primaryStem
-                }
-                if (stemMatch != null) return stemMatch
-            }
-            return null
-        }
-        return apps.firstOrNull { !it.isUpdateAvailable } ?: apps.first()
-    }
+    ): InstalledApp? = AssetVariant.findMatchingInstalledApp(apps, primaryAssetName)
 
     private fun observeInstalledApp(repoId: Long) {
         viewModelScope.launch {
