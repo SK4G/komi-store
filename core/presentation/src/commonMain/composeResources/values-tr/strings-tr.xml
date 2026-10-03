@@ -336,8 +336,9 @@
     <!-- Uninstall / Open -->
     <string name="uninstall">Kaldır</string>
     <string name="open_app">Aç</string>
-    <string name="downgrade_requires_uninstall">Sürüm düşürme kaldırma gerektirir</string>
-    <string name="downgrade_warning_message">%1$s sürümünü yüklemek için önce mevcut sürümü (%2$s) kaldırmanız gerekir. Uygulama verileri kaybolacaktır.</string>
+    <string name="downgrade_warning_title">Daha eski sürüm seçildi</string>
+    <string name="downgrade_warning_message">%1$s, yüklü olan %2$s sürümünden daha düşük.\nAndroid daha düşük bir sürümü yüklemeyi reddedebilir.\nReddederse, yüklü %2$s olduğu gibi kalır.</string>
+    <string name="downgrade_warning_uninstall_note">%1$s kaldırılırsa uygulama verileri silinir.</string>
     <string name="uninstall_first">Önce kaldır</string>
     <string name="install_version">%1$s yükle</string>
     <string name="failed_to_open_app">%1$s açılamadı</string>
@@ -1057,16 +1058,6 @@
     <string name="adaptive_pick_repo_subtitle">Ayrıntılarını burada görüntülemek için soldaki herhangi bir karta dokunun.</string>
     <string name="adaptive_pick_repo_title">Bir depo seçin</string>
     <string name="apps_section_pending_installs">Kurulmaya hazır</string>
-    <string name="apps_two_pane_advanced_settings">Gelişmiş ayarlar</string>
-    <string name="apps_two_pane_detail_section_actions">Hızlı işlemler</string>
-    <string name="apps_two_pane_detail_section_settings">Ayarlar</string>
-    <string name="apps_two_pane_detail_section_status">Durum</string>
-    <string name="apps_two_pane_empty_subtitle">Ayrıntılarını ve işlemlerini görmek için soldaki herhangi bir uygulamayı seçin.</string>
-    <string name="apps_two_pane_empty_title">Bir uygulama seçin</string>
-    <string name="apps_two_pane_installed_label">Yüklü</string>
-    <string name="apps_two_pane_latest_label">En son</string>
-    <string name="apps_two_pane_open_repo">Depoyu aç</string>
-    <string name="apps_two_pane_pick_variant">Varyant seç</string>
     <string name="apps_updates_banner_hide">Listeyi gizle</string>
     <string name="apps_updates_banner_show">Listeyi gör</string>
     <string name="apps_updates_banner_subtitle">Tümünü tek seferde incele veya güncelle.</string>
@@ -1408,6 +1399,8 @@
     <string name="repo_pages_pr_draft">Taslak</string>
 
     <string name="feed_end_cap">続く · TO BE CONTINUED</string>
+    <string name="feed_layout_description_grid">Izgara görünümüne geç</string>
+    <string name="feed_layout_description_list">Liste görünümüne geç</string>
     <string name="feed_masthead_subtitle">発見 · DISCOVER APPS</string>
     <string name="home_masthead_subtitle">ランキング · CHARTS &amp; PICKS</string>
     <string name="feed_platform_picker_title_jp">対応</string>

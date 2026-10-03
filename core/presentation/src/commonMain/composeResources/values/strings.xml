@@ -231,8 +231,9 @@
     <!-- Uninstall / Open -->
     <string name="uninstall">Uninstall</string>
     <string name="open_app">Open</string>
-    <string name="downgrade_requires_uninstall">Downgrade requires uninstall</string>
-    <string name="downgrade_warning_message">Installing version %1$s requires uninstalling the current version (%2$s) first. Your app data will be lost.</string>
+    <string name="downgrade_warning_title">Older version selected</string>
+    <string name="downgrade_warning_message">%1$s is lower than the %2$s already installed.\nAndroid may refuse to install a lower version.\nIf it does, the installed %2$s is left as it is.</string>
+    <string name="downgrade_warning_uninstall_note">Uninstalling %1$s erases app data.</string>
     <string name="uninstall_first">Uninstall first</string>
     <string name="signing_key_changed_title">Signing key changed</string>
     <string name="signing_key_changed_message">The signing certificate for this app has changed since it was first installed.\n\nThis could mean the developer rotated their signing key, or the binary may have been tampered with.\n\nExpected: %1$s\nReceived: %2$s</string>
@@ -1057,7 +1058,6 @@
     <string name="apps_menu_item_active">%1$s  ✓</string>
     <string name="apps_version_update">%1$s → %2$s</string>
     <string name="apps_version_dated">%1$s (%2$s)</string>
-    <string name="apps_latest_version_placeholder">—</string>
     <string name="apps_variant_subtitle">%1$s  ·  %2$s</string>
     <string name="apps_section_header_cd">%1$s, %2$d, %3$s</string>
     <string name="apps_section_header_static_cd">%1$s, %2$d</string>
@@ -1076,16 +1076,6 @@
     <string name="apps_updates_banner_show">See list</string>
     <string name="apps_updates_banner_hide">Hide list</string>
     <string name="apps_section_pending_installs">Ready to install</string>
-    <string name="apps_two_pane_empty_title">Pick an app</string>
-    <string name="apps_two_pane_empty_subtitle">Select any app on the left to see its details and actions.</string>
-    <string name="apps_two_pane_detail_section_status">Status</string>
-    <string name="apps_two_pane_detail_section_actions">Quick actions</string>
-    <string name="apps_two_pane_detail_section_settings">Settings</string>
-    <string name="apps_two_pane_open_repo">Open repository</string>
-    <string name="apps_two_pane_installed_label">Installed</string>
-    <string name="apps_two_pane_latest_label">Latest</string>
-    <string name="apps_two_pane_pick_variant">Pick variant</string>
-    <string name="apps_two_pane_advanced_settings">Advanced settings</string>
     <string name="adaptive_pick_repo_title">Pick a repository</string>
     <string name="adaptive_pick_repo_subtitle">Tap any card on the left to view its details here.</string>
     <string name="translation_card_title">Translate</string>
@@ -1497,6 +1487,8 @@
     <string name="feed_offline">Offline — showing a saved feed</string>
     <string name="feed_failed_to_load">Couldn\'t load the feed</string>
     <string name="feed_end_cap">続く · TO BE CONTINUED</string>
+    <string name="feed_layout_description_grid">Switch to grid layout</string>
+    <string name="feed_layout_description_list">Switch to list layout</string>
     <string name="feed_category_ai">AI</string>
     <string name="feed_category_privacy">Privacy</string>
     <string name="feed_category_networking">Networking</string>

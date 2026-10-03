@@ -337,8 +337,9 @@
     <!-- Uninstall / Open -->
     <string name="uninstall">제거</string>
     <string name="open_app">열기</string>
-    <string name="downgrade_requires_uninstall">다운그레이드를 위해 제거가 필요합니다</string>
-    <string name="downgrade_warning_message">버전 %1$s을(를) 설치하려면 현재 버전(%2$s)을 먼저 제거해야 합니다. 앱 데이터가 삭제됩니다.</string>
+    <string name="downgrade_warning_title">이전 버전이 선택됨</string>
+    <string name="downgrade_warning_message">%1$s은(는) 이미 설치된 %2$s보다 낮습니다.\nAndroid가 더 낮은 버전의 설치를 거부할 수 있습니다.\n거부되면 설치된 %2$s은(는) 그대로 유지됩니다.</string>
+    <string name="downgrade_warning_uninstall_note">%1$s을(를) 제거하면 앱 데이터가 삭제됩니다.</string>
     <string name="uninstall_first">먼저 제거</string>
     <string name="install_version">%1$s 설치</string>
     <string name="failed_to_open_app">%1$s 열기 실패</string>
@@ -1034,16 +1035,6 @@
     <string name="adaptive_pick_repo_subtitle">왼쪽의 카드를 탭하면 여기에서 세부 정보를 볼 수 있어요.</string>
     <string name="adaptive_pick_repo_title">저장소를 선택하세요</string>
     <string name="apps_section_pending_installs">설치 준비 완료</string>
-    <string name="apps_two_pane_advanced_settings">고급 설정</string>
-    <string name="apps_two_pane_detail_section_actions">빠른 작업</string>
-    <string name="apps_two_pane_detail_section_settings">설정</string>
-    <string name="apps_two_pane_detail_section_status">상태</string>
-    <string name="apps_two_pane_empty_subtitle">왼쪽에서 앱을 선택하면 세부 정보와 작업을 볼 수 있어요.</string>
-    <string name="apps_two_pane_empty_title">앱을 선택하세요</string>
-    <string name="apps_two_pane_installed_label">설치됨</string>
-    <string name="apps_two_pane_latest_label">최신</string>
-    <string name="apps_two_pane_open_repo">저장소 열기</string>
-    <string name="apps_two_pane_pick_variant">변형 선택</string>
     <string name="apps_updates_banner_hide">목록 숨기기</string>
     <string name="apps_updates_banner_show">목록 보기</string>
     <string name="apps_updates_banner_subtitle">한 번에 검토하거나 모두 업데이트하세요.</string>
@@ -1398,6 +1389,8 @@
 
     <!-- Feed / Home masthead + sidebar (Japanese decorative stamps verbatim) -->
     <string name="feed_end_cap">続く · TO BE CONTINUED</string>
+    <string name="feed_layout_description_grid">그리드 보기로 전환</string>
+    <string name="feed_layout_description_list">목록 보기로 전환</string>
     <string name="feed_masthead_subtitle">発見 · DISCOVER APPS</string>
     <string name="home_masthead_subtitle">ランキング · CHARTS &amp; PICKS</string>
     <string name="feed_platform_picker_title_jp">対応</string>

@@ -238,6 +238,39 @@ class DetailsViewModel(
                 dismissDowngradeWarning()
             }
 
+            DetailsAction.OnConfirmDowngradeInstall -> {
+                val warning = _state.value.downgradeWarning ?: return
+                dismissDowngradeWarning()
+                val installedApp = _state.value.installedApp
+                viewModelScope.launch {
+                    val consentStillApplies =
+                        _state.value.selectedRelease?.tagName == warning.targetVersion
+                    if (consentStillApplies &&
+                        installedApp != null &&
+                        VersionMath.isExactSameVersion(
+                            installedApp.latestVersion,
+                            warning.currentVersion,
+                        )
+                    ) {
+                        installedAppsRepository.setSkippedReleaseTag(
+                            installedApp.packageName,
+                            installedApp.latestVersion,
+                        )
+                    }
+                    if (_state.value.selectedRelease?.tagName == warning.targetVersion) {
+                        install(ignoreDowngrade = true)
+                    } else {
+                        install()
+                    }
+                }
+            }
+
+            DetailsAction.OnConfirmDowngradeUninstall -> {
+                _state.value.downgradeWarning ?: return
+                dismissDowngradeWarning()
+                uninstallApp()
+            }
+
             DetailsAction.OnDismissSigningKeyWarning -> {
                 _state.update {
                     it.copy(
@@ -880,11 +913,7 @@ class DetailsViewModel(
                         sourceHost = sourceHostParam,
                     )
 
-                val byPrevCategory = when (prevCategory) {
-                    ReleaseCategory.STABLE -> releases.firstOrNull { !it.isEffectivelyPreRelease() }
-                    ReleaseCategory.PRE_RELEASE -> releases.firstOrNull { it.isEffectivelyPreRelease() }
-                    ReleaseCategory.ALL -> releases.firstOrNull()
-                }
+                val byPrevCategory = releases.firstInCategory(prevCategory)
                 val selected = byPrevCategory
                     ?: releases.firstOrNull { !it.isEffectivelyPreRelease() }
                     ?: releases.firstOrNull()
@@ -939,6 +968,13 @@ class DetailsViewModel(
             }
         }
     }
+
+    private fun List<GithubRelease>.firstInCategory(category: ReleaseCategory): GithubRelease? =
+        when (category) {
+            ReleaseCategory.STABLE -> firstOrNull { !it.isEffectivelyPreRelease() }
+            ReleaseCategory.PRE_RELEASE -> firstOrNull { it.isEffectivelyPreRelease() }
+            ReleaseCategory.ALL -> firstOrNull()
+        }
 
     private fun recomputeAssetsForRelease(
         release: GithubRelease?,
@@ -1537,13 +1573,14 @@ class DetailsViewModel(
         }
     }
 
-    private fun install() {
+    private fun install(ignoreDowngrade: Boolean = false) {
         val primary = _state.value.primaryAsset
         val release = _state.value.selectedRelease
         val installedApp = _state.value.installedApp
 
         if (primary != null && release != null) {
-            if (installedApp != null &&
+            if (!ignoreDowngrade &&
+                installedApp != null &&
                 !installedApp.isPendingInstall &&
                 VersionHelper.normalizeVersion(release.tagName) !=
                 VersionHelper.normalizeVersion(
@@ -2569,36 +2606,28 @@ class DetailsViewModel(
                 }
 
                 val targetAssetName = initialAssetNameParam ?: targetApp?.installedAssetName
-                val targetFilterRegex = targetApp?.assetFilterRegex
-                val releaseWithTargetAsset = if (targetAssetName != null) {
-                    allReleases.firstOrNull { rel ->
-                        rel.assets.any { 
-                            it.name == targetAssetName || 
-                            AssetVariant.extractBaseStem(it.name) == AssetVariant.extractBaseStem(targetAssetName) 
-                        }
+                val installedVersionTag = targetApp?.installedVersion
+                val installedRelease =
+                    allReleases.firstOrNull {
+                        VersionMath.isExactSameVersion(it.tagName, installedVersionTag)
+                    } ?: allReleases.firstOrNull {
+                        VersionMath.isSameVersion(it.tagName, installedVersionTag)
                     }
-                } else if (!targetFilterRegex.isNullOrBlank()) {
-                    val regex = runCatching { Regex(targetFilterRegex) }.getOrNull()
-                    allReleases.firstOrNull { rel ->
-                        rel.assets.any { asset -> regex?.containsMatchIn(asset.name) == true }
-                    }
-                } else {
-                    null
-                }
-
-                val selectedRelease = releaseWithTargetAsset
-                    ?: if (targetApp?.includePreReleases == true) {
-                        allReleases.firstOrNull { it.isEffectivelyPreRelease() }
-                            ?: allReleases.firstOrNull()
+                val installedIsPreRelease = installedRelease?.isEffectivelyPreRelease() == true
+                val selectedRelease =
+                    allReleases.firstInCategory(
+                        if (installedIsPreRelease) {
+                            ReleaseCategory.PRE_RELEASE
+                        } else {
+                            ReleaseCategory.STABLE
+                        },
+                    ) ?: allReleases.firstInCategory(ReleaseCategory.ALL)
+                val resolvedCategory =
+                    if (selectedRelease?.isEffectivelyPreRelease() == true) {
+                        ReleaseCategory.PRE_RELEASE
                     } else {
-                        allReleases.firstOrNull { !it.isEffectivelyPreRelease() }
-                            ?: allReleases.firstOrNull()
+                        ReleaseCategory.STABLE
                     }
-
-                val initialReleaseCategory = when {
-                    selectedRelease?.isEffectivelyPreRelease() == true -> ReleaseCategory.PRE_RELEASE
-                    else -> ReleaseCategory.STABLE
-                }
 
                 val (installable, initialPrimary) = recomputeAssetsForRelease(
                     selectedRelease,
@@ -2631,7 +2660,7 @@ class DetailsViewModel(
                         releasesLoadFailed = releasesFailed,
                         isRetryingReleases = false,
                         selectedRelease = selectedRelease,
-                        selectedReleaseCategory = initialReleaseCategory,
+                        selectedReleaseCategory = resolvedCategory,
                         stats = stats,
                         readmeMarkdown = readme?.first,
                         readmeLanguage = readme?.second,
@@ -2768,6 +2797,7 @@ class DetailsViewModel(
                 }
                 val selectedRelease = freshReleases?.let { list ->
                     carried
+                        ?: list.firstInCategory(previousCategory)
                         ?: list.firstOrNull { !it.isEffectivelyPreRelease() }
                         ?: list.firstOrNull()
                 } ?: previousSelected

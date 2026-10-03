@@ -175,6 +175,7 @@ val viewModelsModule =
             CategoryListViewModel(
                 category = params.get(),
                 homeRepository = get(),
+                tweaksRepository = get(),
             )
         }
         viewModel {
