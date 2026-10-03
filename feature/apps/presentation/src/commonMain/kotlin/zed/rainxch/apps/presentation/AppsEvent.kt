@@ -14,7 +14,6 @@ sealed interface AppsEvent {
         val sourceHost: String? = null,
         val owner: String? = null,
         val repo: String? = null,
-        val initialAssetName: String? = null,
         val packageName: String? = null,
     ) : AppsEvent
 

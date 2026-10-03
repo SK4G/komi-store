@@ -160,8 +160,6 @@ private fun MainDetailPane(
             append('|')
             append(args.sourceHost.orEmpty())
             append('|')
-            append(args.initialAssetName.orEmpty())
-            append('|')
             append(args.packageName.orEmpty())
         }
     val viewModel: DetailsViewModel =
@@ -172,7 +170,6 @@ private fun MainDetailPane(
                 args.repo.orEmpty(),
                 args.isComingFromUpdate,
                 args.sourceHost,
-                args.initialAssetName,
                 args.packageName,
             )
         }

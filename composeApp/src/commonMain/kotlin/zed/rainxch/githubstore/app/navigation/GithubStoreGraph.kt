@@ -25,7 +25,6 @@ sealed interface GithubStoreGraph {
         val repo: String = "",
         val isComingFromUpdate: Boolean = false,
         val sourceHost: String? = null,
-        val initialAssetName: String? = null,
         val packageName: String? = null,
     ) : GithubStoreGraph
 
