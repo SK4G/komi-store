@@ -80,6 +80,7 @@ fun ReleaseAssetsPicker(
     showAllPlatforms: Boolean = false,
     crossPlatformAssets: ImmutableList<GithubAsset> = persistentListOf(),
     installedApps: ImmutableList<InstalledApp> = persistentListOf(),
+    selectedReleaseTag: String? = null,
 ) {
     val colors = LocalPersonality.current.colors
 
@@ -93,6 +94,7 @@ fun ReleaseAssetsPicker(
         selectedAsset = selectedAsset,
         pinnedVariant = pinnedVariant,
         installedApps = installedApps,
+        selectedReleaseTag = selectedReleaseTag,
         onDismiss = { onAction(DetailsAction.ToggleReleaseAssetsPicker) },
         onSelect = { onAction(DetailsAction.SelectDownloadAsset(it)) },
         onUnpin = { onAction(DetailsAction.UnpinPreferredVariant) },
@@ -169,6 +171,7 @@ private fun ReleaseAssetsItemsPicker(
     onToggleShowAllPlatforms: (Boolean) -> Unit,
     onDownloadForTransfer: (GithubAsset) -> Unit,
     installedApps: ImmutableList<InstalledApp> = persistentListOf(),
+    selectedReleaseTag: String? = null,
     modifier: Modifier = Modifier,
 ) {
     if (!showPicker) return
@@ -271,8 +274,13 @@ private fun ReleaseAssetsItemsPicker(
             val installableIds = remember(assetsList) {
                 assetsList.map { it.id }.toSet()
             }
-            val installedAssets = remember(assetsList, installedApps) {
-                assetsList.filter { AssetOwnership.isInstalledVariant(it.name, installedApps) }
+            val variantStatuses = remember(assetsList, crossPlatformAssets, installedApps, selectedReleaseTag) {
+                (assetsList + crossPlatformAssets).mapNotNull { asset ->
+                    AssetOwnership.variantStatus(asset.name, selectedReleaseTag, installedApps)?.let { asset.id to it }
+                }.toMap()
+            }
+            val installedAssets = remember(assetsList, variantStatuses) {
+                assetsList.filter { it.id in variantStatuses }
             }
             val otherAssets = remember(assetsList, installedAssets) {
                 if (installedAssets.isEmpty()) assetsList
@@ -313,7 +321,7 @@ private fun ReleaseAssetsItemsPicker(
                                 assets = assets,
                                 selectedAsset = selectedAsset,
                                 pinnedVariant = pinnedVariant,
-                                installedApps = installedApps,
+                                variantStatuses = variantStatuses,
                                 onAssetClick = { asset ->
                                     if (asset.id in installableIds) {
                                         onSelect(asset)
@@ -328,8 +336,13 @@ private fun ReleaseAssetsItemsPicker(
 
                     if (installedAssets.isNotEmpty()) {
                         item(key = "section-header-installed") {
+                            val allInstalled = installedAssets.all {
+                                variantStatuses[it.id] == AssetOwnership.VariantStatus.INSTALLED
+                            }
                             KomiText(
-                                text = stringResource(Res.string.installed),
+                                text = stringResource(
+                                    if (allInstalled) Res.string.installed else Res.string.assets_section_your_app,
+                                ),
                                 role = KomiTextRole.Label,
                                 fontWeight = FontWeight.SemiBold,
                                 color = colors.primary,
@@ -344,7 +357,7 @@ private fun ReleaseAssetsItemsPicker(
                                 asset = asset,
                                 isSelected = asset.id == selectedAsset?.id,
                                 isPinned = isPinned,
-                                isInstalled = true,
+                                variantStatus = variantStatuses[asset.id],
                                 onClick = { onSelect(asset) },
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -373,7 +386,6 @@ private fun ReleaseAssetsItemsPicker(
                                     asset = asset,
                                     isSelected = asset.id == selectedAsset?.id,
                                     isPinned = isPinned,
-                                    isInstalled = false,
                                     onClick = { onSelect(asset) },
                                     modifier = Modifier.fillMaxWidth(),
                                 )
@@ -457,7 +469,7 @@ private fun ReleaseAssetItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isPinned: Boolean = false,
-    isInstalled: Boolean = false,
+    variantStatus: AssetOwnership.VariantStatus? = null,
 ) {
     val colors = LocalPersonality.current.colors
     val shape = LocalPersonality.current.shape
@@ -488,10 +500,15 @@ private fun ReleaseAssetItem(
                     modifier = Modifier.weight(1f, fill = false),
                     uppercase = false,
                 )
-                if (isInstalled) {
+                val variantBadge = when (variantStatus) {
+                    AssetOwnership.VariantStatus.INSTALLED -> Res.string.installed
+                    AssetOwnership.VariantStatus.UPDATE -> Res.string.update
+                    else -> null
+                }
+                if (variantBadge != null) {
                     Spacer(Modifier.width(6.dp))
                     KomiText(
-                        text = stringResource(Res.string.installed),
+                        text = stringResource(variantBadge),
                         role = KomiTextRole.Label,
                         fontSize = 11.sp,
                         color = colors.onSurfaceVariant,
@@ -566,7 +583,7 @@ private fun PlatformSectionCard(
     selectedAsset: GithubAsset?,
     pinnedVariant: String?,
     onAssetClick: (GithubAsset) -> Unit,
-    installedApps: ImmutableList<InstalledApp> = persistentListOf(),
+    variantStatuses: Map<Long, AssetOwnership.VariantStatus> = emptyMap(),
 ) {
     val colors = LocalPersonality.current.colors
     KomiSurface(
@@ -618,13 +635,11 @@ private fun PlatformSectionCard(
                     isInstallableHere &&
                             !pinnedVariant.isNullOrBlank() &&
                             variantTag?.equals(pinnedVariant, ignoreCase = true) == true
-                val isInstalled =
-                    isInstallableHere && AssetOwnership.isInstalledVariant(asset.name, installedApps)
                 ReleaseAssetItem(
                     asset = asset,
                     isSelected = isInstallableHere && asset.id == selectedAsset?.id,
                     isPinned = isPinned,
-                    isInstalled = isInstalled,
+                    variantStatus = variantStatuses[asset.id]?.takeIf { isInstallableHere },
                     onClick = { onAssetClick(asset) },
                     modifier = Modifier.fillMaxWidth(),
                 )

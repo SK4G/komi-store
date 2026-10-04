@@ -2,6 +2,7 @@ package zed.rainxch.core.domain.utils
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import zed.rainxch.core.domain.model.installation.InstallSource
 import zed.rainxch.core.domain.model.installation.InstalledApp
 
@@ -11,6 +12,7 @@ class InstalledVariantTest {
         installedAssetName: String?,
         pending: Boolean = false,
         glob: String? = null,
+        installedVersion: String = "1.0.0",
     ) = InstalledApp(
         packageName = packageName,
         repoId = 1L,
@@ -20,7 +22,7 @@ class InstalledVariantTest {
         repoDescription = null,
         primaryLanguage = null,
         repoUrl = "",
-        installedVersion = "1.0.0",
+        installedVersion = installedVersion,
         installedAssetName = installedAssetName,
         installedAssetUrl = null,
         latestVersion = null,
@@ -41,7 +43,7 @@ class InstalledVariantTest {
     )
 
     private fun marked(assets: List<String>, apps: List<InstalledApp>): List<String> =
-        assets.filter { AssetOwnership.isInstalledVariant(it, apps) }
+        assets.filter { AssetOwnership.variantStatus(it, "2.0.0", apps) != null }
 
     private val abiRelease = listOf(
         "app-arm64-v8a-1.3.0.apk",
@@ -99,5 +101,44 @@ class InstalledVariantTest {
     fun a_linked_app_is_marked_by_its_pinned_glob() {
         val apps = listOf(app("com.app", null, glob = "app-arm64-v8a-*.apk"))
         assertEquals(listOf("app-arm64-v8a-1.3.0.apk"), marked(abiRelease, apps))
+    }
+
+    @Test
+    fun the_installed_release_is_installed() {
+        val apps = listOf(
+            app(
+                "org.godotengine.editor.v4",
+                "Godot_v4.7.2-stable_android_editor.apk",
+                installedVersion = "4.7.2-stable",
+            ),
+        )
+        assertEquals(
+            AssetOwnership.VariantStatus.INSTALLED,
+            AssetOwnership.variantStatus("Godot_v4.7.2-stable_android_editor.apk", "4.7.2-stable", apps),
+        )
+    }
+
+    @Test
+    fun a_newer_release_of_the_installed_variant_is_an_update() {
+        val apps = listOf(app("io.ente.auth", "ente-auth-v4.4.24.apk", installedVersion = "auth-v4.4.24"))
+        assertEquals(
+            AssetOwnership.VariantStatus.UPDATE,
+            AssetOwnership.variantStatus("ente-auth-v4.4.25.apk", "auth-v4.4.25", apps),
+        )
+    }
+
+    @Test
+    fun an_older_release_of_the_installed_variant_is_neither() {
+        val apps = listOf(app("io.ente.auth", "ente-auth-v4.4.24.apk", installedVersion = "auth-v4.4.24"))
+        assertEquals(
+            AssetOwnership.VariantStatus.OTHER_VERSION,
+            AssetOwnership.variantStatus("ente-auth-v4.4.20.apk", "auth-v4.4.20", apps),
+        )
+    }
+
+    @Test
+    fun another_variant_has_no_status() {
+        val apps = listOf(app("com.app", "app-arm64-v8a-1.2.0.apk", installedVersion = "v1.2.0"))
+        assertNull(AssetOwnership.variantStatus("app-armeabi-v7a-1.3.0.apk", "v1.3.0", apps))
     }
 }
