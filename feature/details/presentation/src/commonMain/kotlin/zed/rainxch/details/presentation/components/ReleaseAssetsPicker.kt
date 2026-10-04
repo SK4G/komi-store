@@ -48,6 +48,7 @@ import zed.rainxch.core.domain.model.account.github.GithubAsset
 import zed.rainxch.core.domain.model.account.github.GithubUser
 import zed.rainxch.core.domain.model.installation.InstalledApp
 import zed.rainxch.core.domain.model.repository.DiscoveryPlatform
+import zed.rainxch.core.domain.utils.AssetOwnership
 import zed.rainxch.core.domain.utils.AssetVariant
 import zed.rainxch.core.presentation.components.buttons.KomiButton
 import zed.rainxch.core.presentation.components.buttons.KomiButtonSize
@@ -271,10 +272,7 @@ private fun ReleaseAssetsItemsPicker(
                 assetsList.map { it.id }.toSet()
             }
             val installedAssets = remember(assetsList, installedApps) {
-                assetsList.filter { asset ->
-                    val matched = AssetVariant.findMatchingInstalledApp(installedApps, asset.name)
-                    matched != null && !matched.isPendingInstall
-                }
+                assetsList.filter { AssetOwnership.isInstalledVariant(it.name, installedApps) }
             }
             val otherAssets = remember(assetsList, installedAssets) {
                 if (installedAssets.isEmpty()) assetsList
@@ -331,7 +329,7 @@ private fun ReleaseAssetsItemsPicker(
                     if (installedAssets.isNotEmpty()) {
                         item(key = "section-header-installed") {
                             KomiText(
-                                text = stringResource(Res.string.assets_section_installed),
+                                text = stringResource(Res.string.installed),
                                 role = KomiTextRole.Label,
                                 fontWeight = FontWeight.SemiBold,
                                 color = colors.primary,
@@ -386,13 +384,10 @@ private fun ReleaseAssetsItemsPicker(
                             val variantTag = AssetVariant.extract(asset.name)
                             val isPinned = !pinnedVariant.isNullOrBlank() &&
                                     variantTag?.equals(pinnedVariant, ignoreCase = true) == true
-                            val isAssetInstalled =
-                                AssetVariant.findMatchingInstalledApp(installedApps, asset.name)?.isPendingInstall == false
                             ReleaseAssetItem(
                                 asset = asset,
                                 isSelected = asset.id == selectedAsset?.id,
                                 isPinned = isPinned,
-                                isInstalled = isAssetInstalled,
                                 onClick = { onSelect(asset) },
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -496,7 +491,7 @@ private fun ReleaseAssetItem(
                 if (isInstalled) {
                     Spacer(Modifier.width(6.dp))
                     KomiText(
-                        text = stringResource(Res.string.variant_picker_installed_badge),
+                        text = stringResource(Res.string.installed),
                         role = KomiTextRole.Label,
                         fontSize = 11.sp,
                         color = colors.onSurfaceVariant,
@@ -624,8 +619,7 @@ private fun PlatformSectionCard(
                             !pinnedVariant.isNullOrBlank() &&
                             variantTag?.equals(pinnedVariant, ignoreCase = true) == true
                 val isInstalled =
-                    isInstallableHere &&
-                            AssetVariant.findMatchingInstalledApp(installedApps, asset.name)?.isPendingInstall == false
+                    isInstallableHere && AssetOwnership.isInstalledVariant(asset.name, installedApps)
                 ReleaseAssetItem(
                     asset = asset,
                     isSelected = isInstallableHere && asset.id == selectedAsset?.id,

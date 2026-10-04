@@ -16,6 +16,19 @@ object AssetOwnership {
         return assets.filter { isSameApp(it.name, anchorAssetName) }.ifEmpty { assets }
     }
 
+    fun isInstalledVariant(assetName: String, apps: List<InstalledApp>): Boolean {
+        val glob = AssetVariant.deriveGlob(assetName)
+        return apps.any { app ->
+            if (app.isPendingInstall) return@any false
+            val installed = app.installedAssetName
+            if (glob == null) {
+                installed == assetName
+            } else {
+                (installed?.let(AssetVariant::deriveGlob) ?: app.assetGlobPattern) == glob
+            }
+        }
+    }
+
     fun ownerOf(
         assetName: String,
         apps: List<InstalledApp>,
